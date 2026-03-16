@@ -4,11 +4,11 @@
 ![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-cyan.svg)
 ![Platform: Web](https://img.shields.io/badge/Platform-Web-brightgreen.svg)
 
-**"Analyze and purge hundreds of cluttered fork repositories professionally."**
-*"우후죽순 쌓인 수백 개의 포크(Fork) 리포지토리, 이제는 전문적으로 진단하고 일괄 삭제하십시오."*
+**"Keep your GitHub clean and your mind even cleaner."**
+*"우후죽순 쌓인 포크 리포지토리, 이제는 전문적인 도구로 시원하게 정리해 보세요."*
 
 This is a browser-based open-source tool that works with a single HTML file—no complex installation required. Analyze repositories in detail and purge hundreds of units in seconds through a technical UI inspired by the Cobra Command Center.
-이 프로젝트는 브라우저 기반의 오픈소스 도구로, 복잡한 설치 과정 없이 HTML 파일 하나만으로 작동합니다. Cobra Command Center 스타일의 테크니컬 UI를 통해 리포지토리를 상세 분석하고, 수백 개의 유닛을 단 몇 초 만에 정화(Purge)할 수 있습니다.
+HTML 파일 하나만으로 가볍게 실행되는 브라우저 기반 관리 도구입니다. 'Cobra Command Center' 테마의 세련된 인터페이스로 내 포크 목록을 꼼꼼히 분석하고, 불필요한 리포지토리들을 단 몇 초 만에 깔끔하게 정리해 드립니다.
 
 ---
 
@@ -21,34 +21,54 @@ This is a browser-based open-source tool that works with a single HTML file—no
 
 ---
 
-## ✨ Core Protocols (핵심 기능)
+## ✨ Core Protocols (주요 특징)
 
-* **Cyber-Tech Interface:** Amber/Orange-toned technical UI for an immersive management environment. (다크 테크니컬 UI로 몰입감 있는 관리 환경 제공)
-* **Deep Analysis:** Instantly parse and preview `README.md` content and images upon selection. (리포지토리 선택 시 README 본문과 이미지를 즉시 프리뷰)
-* **Auto-Pagination:** Seamlessly load 200, 500, or more repositories by bypassing GitHub API limits. (API 제약을 우회하여 수백 개의 리포지토리 자동 로드)
-* **Smart Filtering:** Quickly secure target units with language/name filters and "Select All" functionality. (언어/이름 필터링과 전체 선택 기능으로 유닛 신속 확보)
-* **Safe Purge Sequence:** Automatically identifies the user ID to accurately target only your own repository paths. (사용자 ID를 자동 인식하여 본인 계정 경로만 정확히 삭제)
-* **Zero-Server Security:** Your token is never transmitted to any server; it stays within your browser's local memory. (입력한 토큰은 서버로 전송되지 않으며 브라우저 내에서만 작동)
-
----
-
-## 🛠️ Usage (사용 방법)
-
-1.  **Access System:** Open the deployed URL or the `index.html` file in your browser. (배포된 URL 또는 index.html 파일을 브라우저에서 실행합니다.)
-2.  **Acquire Token:** Generate a [Personal Access Token(Classic)](https://github.com/settings/tokens) with `delete_repo` scope. (delete_repo 권한이 포함된 PAT 토큰을 발급받으십시오.)
-3.  **Initialize:** Enter your token and click `INITIALIZE_CONNECTION` to scan all forks. (토큰 입력 후 초기화 버튼을 눌러 포크 목록을 스캔합니다.)
-4.  **Target Selection:** Review the list and check the units to be deleted. (리스트를 검토하며 삭제할 유닛을 체크합니다.)
-5.  **Purge:** Click the red `PURGE_UNITS` button to start the sequence. Check real-time logs in the left panel. (빨간색 버튼을 눌러 정화 시퀀스를 시작하고 실시간 로그를 확인합니다.)
+* **Cyber-Tech Interface:** Amber/Orange-toned technical UI for an immersive management environment. 
+  (몰입감 넘치는 앰버/오렌지 톤의 UI로 마치 시스템 관제 센터에 있는 듯한 경험을 드립니다.)
+* **Deep Analysis:** Instantly parse and preview `README.md` content and images upon selection. 
+  (어떤 프로젝트였는지 기억이 안 나시나요? 클릭 한 번으로 README와 이미지를 즉시 미리 확인해 보세요.)
+* **Auto-Pagination:** Seamlessly load 200, 500, or more repositories by bypassing GitHub API limits. 
+  (API 제약을 넘어, 수백 개가 넘는 방대한 양의 리포지토리도 끊김 없이 한 번에 불러옵니다.)
+* **Smart Filtering:** Quickly secure target units with language/name filters and "Select All" functionality. 
+  (이름이나 사용 언어로 원하는 대상을 쏙쏙 골라내고, 전체 선택으로 더 빠르게 정리할 수 있습니다.)
+* **Safe Purge Sequence:** Automatically identifies the user ID to accurately target only your own repository paths. 
+  (내 계정 정보를 똑똑하게 인식하여, 오직 본인 소유의 경로만 정확하게 찾아 안전하게 삭제합니다.)
+* **Zero-Server Security:** Your token is never transmitted to any server; it stays within your browser's local memory. 
+  (입력하신 토큰은 서버로 전송되지 않습니다. 오직 당신의 브라우저 로컬 메모리 안에서만 안전하게 사용되니 안심하세요.)
 
 ---
 
-## 🔒 Security (보안)
+## 🛠️ Usage (간단 사용법)
+
+1.  **Access System:** Open the deployed URL or the `index.html` file in your browser. 
+    (배포된 웹 주소나 `index.html` 파일을 브라우저에서 열어주세요.)
+2.  **Acquire Token:** Generate a [Personal Access Token(Classic)](https://github.com/settings/tokens) with `delete_repo` scope. 
+    (`delete_repo` 권한을 체크한 PAT 토큰을 하나 발급받으시면 준비 끝!)
+3.  **Initialize:** Enter your token and click `INITIALIZE_CONNECTION` to scan all forks. 
+    (토큰을 넣고 연결 버튼을 누르면 모든 포크 목록을 알아서 찾아옵니다.)
+4.  **Target Selection:** Review the list and check the units to be deleted. 
+    (리스트를 훑어보며 정리가 필요한 리포지토리들을 체크해 주세요.)
+5.  **Purge:** Click the red `PURGE_UNITS` button to start the sequence. 
+    (빨간색 버튼을 누르면 삭제 시퀀스가 시작됩니다. 왼쪽 패널에서 실시간 로그를 감상해 보세요.)
+
+---
+
+## 🔒 Security & Privacy (보안 및 안내)
 
 This is a **Client-Side** tool. All communications occur directly between the user's browser and GitHub API. No data is collected by external servers.
-본 시스템은 클라이언트 사이드 도구입니다. 모든 통신은 사용자의 브라우저와 GitHub API 간에 직접 이루어지며, 외부 서버로 데이터를 수집하지 않습니다.
+본 도구는 100% 클라이언트 사이드에서 작동합니다. 모든 통신은 오직 사용자의 브라우저와 GitHub API 사이에서만 이루어지며, 어떠한 개인 정보나 데이터도 외부 서버로 전송되거나 수집되지 않습니다.
 
 ---
 
 ## 📄 License (라이선스)
 
 This project is distributed under the **MIT License**.
+
+---
+> **[Notice]** > This project was developed through an **interactive collaboration between a Human Developer and AI (Gemini)**.  
+> 본 프로젝트는 **AI의 유기적인 협업**을 통해 기획되고 생성되었습니다.
+
+<div align="center">
+  <b>Developed for Efficient Developer Workflow.</b><br>
+  <i>Clean your GitHub, Clean your Mind.</i>
+</div>
