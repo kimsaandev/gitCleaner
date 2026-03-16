@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINAL - GITHUB PURGE SYSTEM</title>
+    <style>
+        :root {
+            --bg-color: #0d0a05;
+            --panel-bg: rgba(20, 15, 5, 0.9);
+            --accent-amber: #ff9d00;
+            --accent-dim: #845100;
+            --text-color: #ffcc66;
+            --border-color: #4a3512;
+            --critical-red: #ff3c00;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin: 0; padding: 15px; overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        .main-frame {
+            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; height: 95vh;
+            background: radial-gradient(circle, #1a1208 0%, #0d0a05 100%);
+        }
+
+        header {
+            padding: 10px 20px; border-bottom: 2px solid var(--accent-amber);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .content-container { display: flex; flex: 1; overflow: hidden; }
+
+        .analysis-panel {
+            width: 40%; border-right: 1px solid var(--border-color);
+            padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            background: rgba(255, 157, 0, 0.03);
+        }
+
+        .repo-preview-img {
+            width: 100%; height: 200px; border: 1px solid var(--accent-dim);
+            object-fit: cover; background: #000; display: none;
+        }
+
+        .markdown-summary {
+            flex: 1; border: 1px solid var(--accent-dim);
+            padding: 10px; font-size: 11px; line-height: 1.4;
+            overflow-y: auto; background: rgba(0,0,0,0.3);
+            white-space: pre-wrap; color: var(--accent-amber);
+        }
+
+        .list-panel { width: 60%; display: flex; flex-direction: column; }
+
+        .controls {
+            padding: 10px; border-bottom: 1px solid var(--border-color);
+            display: flex; gap: 10px; align-items: center;
+        }
+
+        .repo-scroll { flex: 1; overflow-y: auto; padding: 10px; }
+
+        .repo-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; margin-bottom: 5px; border: 1px solid var(--border-color);
+            background: rgba(40, 30, 10, 0.5); cursor: pointer; transition: 0.1s;
+        }
+
+        .repo-item:hover { border-color: var(--accent-amber); background: rgba(255, 157, 0, 0.1); }
+        .repo-item.active { border-color: var(--accent-amber); background: rgba(255, 157, 0, 0.2); }
+
+        .progress-bar { width: 100px; height: 10px; border: 1px solid var(--accent-dim); position: relative; }
+        .progress-fill { height: 100%; background: var(--accent-amber); width: 100%; }
+
+        input, button {
+            background: #000; border: 1px solid var(--accent-dim);
+            color: var(--accent-amber); padding: 5px 10px; font-size: 11px;
+        }
+        button:hover { background: var(--accent-amber); color: #000; }
+        .critical { color: var(--critical-red); border-color: var(--critical-red); font-weight: bold; }
+        
+        #stat-id { color: var(--accent-amber); margin-left: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="main-frame">
+    <header>
+        <div>[ SYSTEM STATUS: <span id="stat-id">NOT CONNECTED</span> ]</div>
+        <div>
+            TOKEN: <input type="password" id="token" style="width:200px" placeholder="PASTE_TOKEN_HERE">
+            <button onclick="initialize()">INITIALIZE_CONNECTION</button>
+        </div>
+    </header>
+
+    <div class="content-container">
+        <div class="analysis-panel" id="analysis-panel">
+            <div style="color: var(--accent-amber); border-bottom: 1px solid;">REPO_ANALYSIS_LOG</div>
+            <img id="preview-img" class="repo-preview-img">
+            <div id="repo-title" style="font-size: 16px; font-weight: bold; color: var(--accent-amber);">READY_TO_SCAN</div>
+            <div class="markdown-summary" id="md-summary">대기 중... 토큰을 입력하고 연결을 시작하십시오.</div>
+            <div id="repo-meta" style="font-size: 10px; color: var(--accent-dim);"></div>
+        </div>
+
+        <div class="list-panel">
+            <div class="controls">
+                <input type="checkbox" id="select-all" onclick="toggleAll()"> ALL_UNITS
+                <input type="text" id="search" placeholder="FILTER_BY_NAME..." oninput="renderList()" style="flex-grow:1;">
+                <button class="critical" onclick="purgeSelected()">PURGE_UNITS</button>
+            </div>
+            <div class="repo-scroll" id="repo-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let repoData = [];
+    let githubToken = "";
+    let currentUserId = "";
+
+    async function initialize() {
+        githubToken = document.getElementById('token').value;
+        if(!githubToken) return alert("ACCESS TOKEN IS MANDATORY.");
+
+        const statusLabel = document.getElementById('stat-id');
+        const logBox = document.getElementById('md-summary');
+        
+        statusLabel.innerText = "CONNECTING...";
+        logBox.innerText = "데이터 분석 시작...";
+        repoData = []; // 데이터 초기화
+
+        try {
+            // 1. 내 정보 확인
+            const userRes = await fetch(`https://api.github.com/user`, {
+                headers: { 'Authorization': `token ${githubToken}` }
+            });
+            const userData = await userRes.json();
+            currentUserId = userData.login;
+            statusLabel.innerText = `CONNECTED AS: ${currentUserId}`;
+
+            // 2. 모든 페이지의 리포지토리 스캔 (Pagination 처리)
+            let page = 1;
+            let hasMore = true;
+
+            while (hasMore) {
+                logBox.innerText += `\n스캐닝 페이지 ${page}...`;
+                
+                // per_page=100으로 설정하고 page 번호를 바꿔가며 요청
+                const res = await fetch(`https://api.github.com/user/repos?type=owner&per_page=100&page=${page}&sort=updated`, {
+                    headers: { 'Authorization': `token ${githubToken}` }
+                });
+                
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    hasMore = false;
+                } else {
+                    // 포크된 것만 필터링해서 합치기
+                    const forksInPage = data.filter(r => r.fork);
+                    repoData = data;
+                    page++;
+                }
+
+                // 안전장치: 너무 많은 페이지 요청 방지 (예: 10페이지 = 1000개 리포지토리)
+                if (page > 10) hasMore = false;
+            }
+            
+            logBox.innerText = `분석 완료. 총 ${repoData.length}개의 포크 유닛이 로드되었습니다.`;
+            renderList();
+        } catch (e) {
+            statusLabel.innerText = "ERROR";
+            logBox.innerText = "데이터 로드 중 오류가 발생했습니다.";
+            console.error(e);
+        }
+    }
+
+    function renderList() {
+        const listContainer = document.getElementById('repo-list');
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        listContainer.innerHTML = "";
+
+        repoData.filter(r => r.name.toLowerCase().includes(searchTerm)).forEach(repo => {
+            const item = document.createElement('div');
+            item.className = 'repo-item';
+            
+            // 핵심: 본인 소유의 경로로 식별자 생성
+            const myPath = `${currentUserId}/${repo.name}`;
+            
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" class="repo-check" value="${myPath}">
+                    <div>
+                        <div style="font-size:12px;">${repo.name}</div>
+                        <div style="font-size:9px; color:var(--accent-dim)">OWNER: ${repo.owner.login} / SIZE: ${repo.size}KB</div>
+                    </div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill"></div></div>
+            `;
+            item.onclick = (e) => {
+                if(e.target.type !== 'checkbox') showDetails(repo, item);
+            };
+            listContainer.appendChild(item);
+        });
+    }
+
+    async function showDetails(repo, element) {
+        document.querySelectorAll('.repo-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+
+        document.getElementById('repo-title').innerText = `TARGET: ${repo.name}`;
+        const summaryBox = document.getElementById('md-summary');
+        const imgBox = document.getElementById('preview-img');
+        
+        summaryBox.innerText = "ANALYZING README DATA...";
+        imgBox.style.display = "none";
+
+        try {
+            const res = await fetch(`https://api.github.com/repos/${repo.full_name}/readme`, {
+                headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3.raw' }
+            });
+            
+            if(res.ok) {
+                let text = await res.text();
+                summaryBox.innerText = text.substring(0, 800) + "...";
+                
+                // 이미지 경로 보정 (상대 경로 -> Raw 절대 경로)
+                const imgMatch = text.match(/!\[.*?\]\((.*?)\)/);
+                if(imgMatch && imgMatch[1]) {
+                    let imgSrc = imgMatch[1];
+                    if (!imgSrc.startsWith('http')) {
+                        imgSrc = `https://raw.githubusercontent.com/${repo.full_name}/master/${imgSrc.replace(/^\//, '')}`;
+                    }
+                    imgBox.src = imgSrc;
+                    imgBox.style.display = "block";
+                }
+            } else {
+                summaryBox.innerText = "NO DATA FOUND.";
+            }
+        } catch (e) {
+            summaryBox.innerText = "ANALYSIS ERROR.";
+        }
+    }
+
+    function toggleAll() {
+        const checked = document.getElementById('select-all').checked;
+        document.querySelectorAll('.repo-check').forEach(c => c.checked = checked);
+    }
+
+    async function purgeSelected() {
+        const selected = Array.from(document.querySelectorAll('.repo-check:checked')).map(c => c.value);
+        if(selected.length === 0) return alert("NO TARGETS SELECTED.");
+        if(!confirm(`CRITICAL: ERASE ${selected.length} UNITS?`)) return;
+
+        const logBox = document.getElementById('md-summary');
+        logBox.innerText = "PURGE SEQUENCE INITIATED...\n";
+
+        for(const path of selected) {
+            logBox.innerText += `\nDELETING: ${path}... `;
+            const res = await fetch(`https://api.github.com/repos/${path}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `token ${githubToken}` }
+            });
+
+            if(res.status === 204) {
+                logBox.innerText += "[SUCCESS]";
+                // 시각적으로 제거
+                const cb = document.querySelector(`.repo-check[value="${path}"]`);
+                if(cb) cb.closest('.repo-item').style.display = 'none';
+            } else {
+                logBox.innerText += `[FAILED: ${res.status}]`;
+            }
+        }
+        alert("PURGE COMPLETE.");
+        initialize(); // 목록 갱신
+    }
+</script>
+</body>
+</html>
